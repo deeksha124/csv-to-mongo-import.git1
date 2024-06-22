@@ -2,21 +2,20 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const path = require('path');
 const csvParser = require('csv-parser');
+const dotenv = require('dotenv');
 
+dotenv.config();
 
-const mongoURL = 'mongodb+srv://test:test123@deeksha.ermas.mongodb.net/';
-
+const mongoURL = process.env.MONGO_DB_CONNECTION_LINK; // Use underscore instead of hyphen
 
 mongoose.connect(mongoURL, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-});
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch((error) => console.error('MongoDB connection error:', error));
 
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', () => {
-  console.log('Connected to MongoDB');
-});
 
 // Define the user schema and model
 const userSchema = new mongoose.Schema({
@@ -44,7 +43,7 @@ const insertDataFromCSV = async (csvFilePath) => {
           await user.save();
         }
         console.log('Data successfully inserted into MongoDB');
-        mongoose.connection.close();
+        mongoose.connection.close(); // Close the connection after the operation
       });
   } catch (error) {
     console.error('Error inserting data:', error);
